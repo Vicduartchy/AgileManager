@@ -5,6 +5,7 @@ import * as schema from './db/schema'
 import { rolesRouter } from './routes/roles'
 import { squadsRouter } from './routes/squads'
 import { agilistaRouter } from './routes/agilistas'
+import { alocacoesRouter } from './routes/alocacoes'
 import { db as defaultDb } from './db/index'
 
 export function createApp(db: BetterSQLite3Database<typeof schema> = defaultDb) {
@@ -19,6 +20,7 @@ export function createApp(db: BetterSQLite3Database<typeof schema> = defaultDb) 
   app.use('/api/roles', rolesRouter(db))
   app.use('/api/squads', squadsRouter(db))
   app.use('/api/agilistas', agilistaRouter(db))
+  app.use('/api/alocacoes', alocacoesRouter(db))
 
   return app
 }

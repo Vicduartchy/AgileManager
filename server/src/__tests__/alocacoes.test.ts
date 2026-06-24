@@ -1,0 +1,53 @@
+import { describe, it, expect } from 'vitest'
+import request from 'supertest'
+import Database from 'better-sqlite3'
+import { drizzle } from 'drizzle-orm/better-sqlite3'
+import * as schema from '../db/schema'
+import { createApp } from '../app'
+
+function makeTestDb() {
+  const sqlite = new Database(':memory:')
+  sqlite.pragma('foreign_keys = ON')
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS roles (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL UNIQUE);
+    CREATE TABLE IF NOT EXISTS squads (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, tribo TEXT NOT NULL, ativa INTEGER NOT NULL DEFAULT 1);
+    CREATE TABLE IF NOT EXISTS agilistas (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, email TEXT NOT NULL UNIQUE, role_id INTEGER NOT NULL REFERENCES roles(id), squad_id INTEGER REFERENCES squads(id), status TEXT NOT NULL DEFAULT 'ativo' CHECK(status IN ('ativo','inativo')));
+    CREATE TABLE IF NOT EXISTS alocacoes (id INTEGER PRIMARY KEY AUTOINCREMENT, agilista_id INTEGER NOT NULL REFERENCES agilistas(id), squad_id INTEGER NOT NULL REFERENCES squads(id), data_inicio TEXT NOT NULL, data_fim TEXT);
+  `)
+  const db = drizzle(sqlite, { schema })
+  db.insert(schema.roles).values({ nome: 'SM' }).run()
+  db.insert(schema.squads).values({ nome: 'Alpha', tribo: 'Tech', ativa: true }).run()
+  db.insert(schema.squads).values({ nome: 'Beta', tribo: 'Ops', ativa: true }).run()
+  db.insert(schema.agilistas).values({ nome: 'Ana', email: 'ana@x.com', role_id: 1, squad_id: null, status: 'ativo' }).run()
+  return db
+}
+
+describe('Alocacoes API', () => {
+  it('POST /api/alocacoes moves agilista to squad', async () => {
+    const app = createApp(makeTestDb())
+    const res = await request(app).post('/api/alocacoes').send({ agilista_id: 1, squad_id: 1 })
+    expect(res.status).toBe(201)
+    expect(res.body.squad_id).toBe(1)
+    // agilista.squad_id should be updated
+    const ag = await request(app).get('/api/agilistas')
+    expect(ag.body[0].squad_id).toBe(1)
+  })
+
+  it('POST /api/alocacoes closes previous open alocacao', async () => {
+    const db = makeTestDb()
+    const app = createApp(db)
+    await request(app).post('/api/alocacoes').send({ agilista_id: 1, squad_id: 1 })
+    await request(app).post('/api/alocacoes').send({ agilista_id: 1, squad_id: 2 })
+    const res = await request(app).get('/api/alocacoes/1')
+    expect(res.body).toHaveLength(2)
+    expect(res.body[0].data_fim).not.toBeNull()
+  })
+
+  it('GET /api/alocacoes/:id returns history', async () => {
+    const app = createApp(makeTestDb())
+    await request(app).post('/api/alocacoes').send({ agilista_id: 1, squad_id: 1 })
+    const res = await request(app).get('/api/alocacoes/1')
+    expect(res.status).toBe(200)
+    expect(res.body[0].agilista_id).toBe(1)
+  })
+})
