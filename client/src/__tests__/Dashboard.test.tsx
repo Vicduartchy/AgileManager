@@ -19,9 +19,10 @@ vi.mock('../store', () => ({
 }))
 
 describe('Dashboard', () => {
-  it('shows active agilistas count', () => {
+  it('shows active agilistas count in the correct card', () => {
     render(<Dashboard />)
-    expect(screen.getAllByText('2').length).toBeGreaterThan(0) // total agilistas ativos
+    const label = screen.getByText('Agilistas Ativos')
+    expect(label.closest('div')).toHaveTextContent('2')
   })
 
   it('shows squad without agilista warning', () => {
