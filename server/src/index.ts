@@ -1,18 +1,11 @@
-import express from 'express'
-import cors from 'cors'
+import { createApp } from './app'
+import { runMigrations } from './db/migrate'
 
-const app = express()
-const PORT = 3001
+runMigrations()
 
-app.use(cors())
-app.use(express.json())
+const app = createApp()
+const port = process.env.PORT ?? 3001
 
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok' })
+app.listen(port, () => {
+  console.log(`AgileManager API running on http://localhost:${port}`)
 })
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
-
-export default app
