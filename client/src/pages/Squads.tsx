@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, ChevronDown, X, Save } from 'lucide-react'
+import { Plus, ChevronDown, X, Save, PowerOff, Power } from 'lucide-react'
 import { useStore } from '../store'
 import { api } from '../api'
 
@@ -9,8 +9,20 @@ export default function Squads() {
   const [form, setForm] = useState({ nome: '', tribo: '' })
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
   const [saving, setSaving] = useState(false)
+  const [toggling, setToggling] = useState<number | null>(null)
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  const handleToggle = async (id: number, ativa: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setToggling(id)
+    try {
+      await api.squads.update(id, { ativa: ativa ? 0 : 1 })
+      await fetchAll()
+    } finally {
+      setToggling(null)
+    }
+  }
 
   const handleCreate = async () => {
     if (!form.nome) return
@@ -67,11 +79,11 @@ export default function Squads() {
           return (
             <div
               key={squad.id}
-              className="bg-white border border-[#E0E0E0] rounded-[10px] overflow-hidden"
+              className={`bg-white border border-[#E0E0E0] rounded-[10px] overflow-hidden transition-opacity ${!squad.ativa ? 'opacity-60' : ''}`}
               style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}
             >
               <div
-                className="flex items-center justify-between px-5 py-4 cursor-pointer border-l-4 border-l-brand-red hover:bg-[#fdf5f3] transition-colors"
+                className={`flex items-center justify-between px-5 py-4 cursor-pointer border-l-4 hover:bg-[#fdf5f3] transition-colors ${squad.ativa ? 'border-l-brand-red' : 'border-l-[#E0E0E0]'}`}
                 onClick={() => toggleExpand(squad.id)}
               >
                 <div>
@@ -87,6 +99,18 @@ export default function Squads() {
                       Inativa
                     </span>
                   )}
+                  <button
+                    onClick={e => handleToggle(squad.id, squad.ativa, e)}
+                    disabled={toggling === squad.id}
+                    title={squad.ativa ? 'Desativar squad' : 'Ativar squad'}
+                    className={`p-1.5 rounded-lg border transition-colors ${
+                      squad.ativa
+                        ? 'border-[#E0E0E0] bg-white text-[#6b7280] hover:border-red-300 hover:text-red-500'
+                        : 'border-green-200 bg-green-50 text-green-600 hover:bg-green-100'
+                    } disabled:opacity-50`}
+                  >
+                    {squad.ativa ? <PowerOff size={13} /> : <Power size={13} />}
+                  </button>
                   <ChevronDown
                     size={16}
                     className="text-[#6b7280] transition-transform duration-200"
