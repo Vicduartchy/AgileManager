@@ -15,14 +15,14 @@ const onUpdate = vi.fn()
 describe('AgilistaTable', () => {
   it('renders all agilistas', () => {
     render(<AgilistaTable agilistas={agilistas} roles={roles} squads={squads} onUpdate={onUpdate} />)
-    expect(screen.getByDisplayValue('Ana Lima')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Bob Silva')).toBeInTheDocument()
+    expect(screen.getByText('Ana Lima')).toBeInTheDocument()
+    expect(screen.getByText('Bob Silva')).toBeInTheDocument()
   })
 
   it('filters by name search', async () => {
     render(<AgilistaTable agilistas={agilistas} roles={roles} squads={squads} onUpdate={onUpdate} />)
     await userEvent.type(screen.getByPlaceholderText(/buscar/i), 'bob')
-    expect(screen.queryByDisplayValue('Ana Lima')).not.toBeInTheDocument()
-    expect(screen.getByDisplayValue('Bob Silva')).toBeInTheDocument()
+    expect(screen.queryByText('Ana Lima')).not.toBeInTheDocument()
+    expect(screen.getByText('Bob Silva')).toBeInTheDocument()
   })
 })

@@ -3,12 +3,21 @@ import { describe, it, expect, vi } from 'vitest'
 import App from '../App'
 
 vi.mock('../store', () => ({
-  useStore: () => ({ roles: [], squads: [], agilistas: [], loading: false, fetchAll: vi.fn(), moveAgilista: vi.fn(), updateAgilista: vi.fn() })
+  useStore: () => ({
+    roles: [], squads: [], agilistas: [], loading: false,
+    fetchAll: vi.fn(), moveAgilista: vi.fn(), updateAgilista: vi.fn(), deleteAgilista: vi.fn(),
+  }),
 }))
 
 describe('App', () => {
-  it('renders header', () => {
+  it('renders login screen with brand name', () => {
     render(<App />)
-    expect(screen.getByText('AgileManager')).toBeInTheDocument()
+    const matches = screen.getAllByText(/AgileManager/i)
+    expect(matches.length).toBeGreaterThan(0)
+  })
+
+  it('shows login form', () => {
+    render(<App />)
+    expect(screen.getByText('Entrar')).toBeInTheDocument()
   })
 })

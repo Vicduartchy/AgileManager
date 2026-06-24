@@ -65,5 +65,12 @@ export function agilistaRouter(db: BetterSQLite3Database<typeof schema>) {
     res.json(updated)
   })
 
+  router.delete('/:id', (req, res) => {
+    const id = Number(req.params.id)
+    const [deleted] = db.delete(agilistas).where(eq(agilistas.id, id)).returning().all()
+    if (!deleted) return res.status(404).json({ error: 'Agilista not found' })
+    res.status(204).end()
+  })
+
   return router
 }

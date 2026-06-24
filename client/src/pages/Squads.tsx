@@ -1,72 +1,188 @@
 import { useEffect, useState } from 'react'
 import { useStore } from '../store'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { api } from '../api'
 
 export default function Squads() {
   const { squads, fetchAll } = useStore()
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ nome: '', tribo: '' })
+  const [expanded, setExpanded] = useState<Set<number>>(new Set())
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
   const handleCreate = async () => {
-    await api.squads.create(form)
-    setOpen(false)
-    setForm({ nome: '', tribo: '' })
-    await fetchAll()
+    if (!form.nome) return
+    setSaving(true)
+    try {
+      await api.squads.create(form)
+      setOpen(false)
+      setForm({ nome: '', tribo: '' })
+      await fetchAll()
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleToggle = async (id: number, ativa: number) => {
-    await api.squads.update(id, { ativa: ativa ? 0 : 1 })
-    await fetchAll()
+  const toggleExpand = (id: number) => {
+    setExpanded(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const inputClass = 'w-full px-3 py-2.5 bg-page-bg border-[1.5px] border-[#E0E0E0] rounded-lg text-sm outline-none focus:border-brand-red'
+  const labelClass = 'block text-[11px] font-bold text-navy uppercase tracking-[0.5px] mb-1.5'
+
+  const statusBadge: Record<string, string> = {
+    ativo: 'bg-[#dcfce7] text-[#166534]',
+    inativo: 'bg-[#fee2e2] text-[#991b1b]',
   }
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Squads</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button>+ Nova Squad</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Nova Squad</DialogTitle></DialogHeader>
-            <div className="space-y-3 py-2">
-              <Input placeholder="Nome da squad" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-              <Input placeholder="Tribo / Área" value={form.tribo} onChange={e => setForm(f => ({ ...f, tribo: e.target.value }))} />
-              <Button onClick={handleCreate} disabled={!form.nome || !form.tribo}>Criar</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+    <div>
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-[22px] font-bold text-navy">Squads</h1>
+          <p className="text-[13px] text-[#6b7280] mt-0.5">Crie, edite e organize as squads do time</p>
+        </div>
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-brand-red text-white text-[13px] font-semibold rounded-lg hover:bg-[#a33a22] transition-colors"
+        >
+          + Nova Squad
+        </button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {squads.map(squad => (
-          <div key={squad.id} className={`bg-white rounded-lg border p-4 space-y-2 ${!squad.ativa ? 'opacity-50' : ''}`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold">{squad.nome}</p>
-                <p className="text-sm text-gray-500">{squad.tribo}</p>
-              </div>
-              <button
-                onClick={() => handleToggle(squad.id, squad.ativa)}
-                className="text-xs text-gray-400 hover:text-gray-700"
+      {/* Squad accordion list */}
+      <div className="space-y-3">
+        {squads.map(squad => {
+          const isOpen = expanded.has(squad.id)
+          const count = squad.agilistas.length
+          return (
+            <div
+              key={squad.id}
+              className="bg-white border border-[#E0E0E0] rounded-[10px] overflow-hidden"
+              style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}
+            >
+              {/* Header */}
+              <div
+                className="flex items-center justify-between px-5 py-4 cursor-pointer border-l-4 border-l-brand-red hover:bg-[#fdf5f3] transition-colors"
+                onClick={() => toggleExpand(squad.id)}
               >
-                {squad.ativa ? 'Inativar' : 'Ativar'}
+                <div>
+                  <strong className="text-navy">{squad.nome}</strong>
+                  <span className="text-[#6b7280] text-[12px] ml-2.5">{squad.tribo}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#6b7280] text-[12px]">
+                    {count} {count === 1 ? 'agilista' : 'agilistas'}
+                  </span>
+                  {!squad.ativa && (
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#fee2e2] text-[#991b1b]">
+                      Inativa
+                    </span>
+                  )}
+                  <span
+                    className="text-[#6b7280] transition-transform duration-200 text-lg leading-none"
+                    style={{ transform: isOpen ? 'rotate(180deg)' : 'none', display: 'inline-block' }}
+                  >
+                    ⌄
+                  </span>
+                </div>
+              </div>
+
+              {/* Body */}
+              {isOpen && (
+                <div className="px-5 py-4 border-t border-[#E0E0E0] flex flex-wrap gap-2">
+                  {squad.agilistas.length === 0 ? (
+                    <span className="text-[#6b7280] text-[13px]">Nenhum agilista alocado nesta squad.</span>
+                  ) : (
+                    squad.agilistas.map(m => (
+                      <div
+                        key={m.id}
+                        className="flex items-center gap-2 bg-page-bg border border-[#E0E0E0] rounded-lg px-3.5 py-2 text-[13px]"
+                      >
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#e8edf5] text-navy">
+                          SM
+                        </span>
+                        <span>{m.nome}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusBadge[m.status] ?? 'bg-[#e8edf5] text-navy'}`}>
+                          {m.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        {squads.length === 0 && (
+          <div className="text-center py-14 text-[#6b7280]">
+            Nenhuma squad cadastrada.
+          </div>
+        )}
+      </div>
+
+      {/* Create modal */}
+      {open && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ background: 'rgba(9,32,64,.5)' }}
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="bg-white rounded-[14px]"
+            style={{ width: 500, maxWidth: '95vw', boxShadow: '0 20px 60px rgba(9,32,64,.25)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0E0E0]">
+              <h2 className="text-[16px] font-bold text-navy">Nova Squad</h2>
+              <button onClick={() => setOpen(false)} className="text-[#6b7280] hover:text-brand-red text-xl leading-none">×</button>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label className={labelClass}>Nome da Squad *</label>
+                <input
+                  className={inputClass}
+                  placeholder="Ex: Squad Pagamentos"
+                  value={form.nome}
+                  onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Tribo / Área</label>
+                <input
+                  className={inputClass}
+                  placeholder="Ex: Tribo Financeiro"
+                  value={form.tribo}
+                  onChange={e => setForm(f => ({ ...f, tribo: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2.5 px-6 py-4 border-t border-[#E0E0E0]">
+              <button
+                onClick={() => setOpen(false)}
+                className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCreate}
+                disabled={!form.nome || saving}
+                className="px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
+              >
+                {saving ? 'Criando...' : 'Criar Squad'}
               </button>
             </div>
-            <p className="text-sm text-gray-600">
-              {squad.agilistas.length} {squad.agilistas.length === 1 ? 'agilista' : 'agilistas'}
-            </p>
-            <div className="flex flex-wrap gap-1">
-              {squad.agilistas.map(a => (
-                <span key={a.id} className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">{a.nome}</span>
-              ))}
-            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

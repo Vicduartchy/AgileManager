@@ -5,6 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        navy: '#092040',
+        'brand-red': '#BF452A',
+        salmon: '#D99789',
+        blush: '#F2C5BB',
+        'page-bg': '#F2F2F2',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

@@ -10,6 +10,16 @@ async function json<T>(res: Response): Promise<T> {
 export const api = {
   roles: {
     list: () => fetch(`${BASE}/roles`).then(r => json<Role[]>(r)),
+    create: (nome: string) =>
+      fetch(`${BASE}/roles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome }),
+      }).then(r => json<Role>(r)),
+    remove: (id: number) =>
+      fetch(`${BASE}/roles/${id}`, { method: 'DELETE' }).then(r => {
+        if (!r.ok) throw new Error(`${r.status}`)
+      }),
   },
   squads: {
     list: () => fetch(`${BASE}/squads`).then(r => json<SquadWithAgilistas[]>(r)),
@@ -46,6 +56,10 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       }).then(r => json<Agilista>(r)),
+    remove: (id: number) =>
+      fetch(`${BASE}/agilistas/${id}`, { method: 'DELETE' }).then(r => {
+        if (!r.ok) throw new Error(`${r.status}`)
+      }),
     bulk: (rows: NewAgilista[]) =>
       fetch(`${BASE}/agilistas/bulk`, {
         method: 'POST',

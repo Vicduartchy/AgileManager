@@ -10,6 +10,7 @@ interface State {
   fetchAll: () => Promise<void>
   moveAgilista: (agilista_id: number, squad_id: number) => Promise<void>
   updateAgilista: (id: number, data: Partial<Agilista>) => Promise<void>
+  deleteAgilista: (id: number) => Promise<void>
 }
 
 export const useStore = create<State>((set, get) => ({
@@ -35,6 +36,11 @@ export const useStore = create<State>((set, get) => ({
 
   updateAgilista: async (id, data) => {
     await api.agilistas.update(id, data)
+    await get().fetchAll()
+  },
+
+  deleteAgilista: async (id) => {
+    await api.agilistas.remove(id)
     await get().fetchAll()
   },
 }))

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgileManager</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #092040;
+      --orange: #BF452A;
+      --salmon: #D99789;
+      --blush:  #F2C5BB;
+      --bg:     #F2F2F2;
+      --white:  #FFFFFF;
+      --border: #E0E0E0;
+      --text:   #1a1a2e;
+      --muted:  #6b7280;
+      --radius: 10px;
+      --shadow: 0 2px 8px rgba(9,32,64,.08);
+    }
+
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Lucide icon sizing */
+    .icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .icon svg { width: 16px; height: 16px; stroke-width: 1.8; }
+    .icon-sm svg { width: 14px; height: 14px; }
+    .icon-lg svg { width: 20px; height: 20px; }
+    .icon-xl svg { width: 48px; height: 48px; stroke-width: 1.2; }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; background: var(--navy);
+    }
+    .login-box {
+      background: var(--white); border-radius: 16px;
+      padding: 48px 40px; width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .login-logo { text-align: center; font-size: 24px; font-weight: 800; color: var(--navy); margin-bottom: 8px; letter-spacing: 1px; }
+    .login-logo span { color: var(--orange); }
+    .login-sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+    .login-divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .login-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 16px; }
+
+    /* ── APP ── */
+    #app { display: none; min-height: 100vh; flex-direction: column; }
+    #app.visible { display: flex; }
+
+    .topbar {
+      background: var(--navy); color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; height: 60px; flex-shrink: 0;
+    }
+    .topbar-logo { font-size: 18px; font-weight: 800; letter-spacing: 1px; }
+    .topbar-logo span { color: var(--salmon); }
+    .topbar-nav { display: flex; gap: 4px; }
+    .nav-btn {
+      padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; background: transparent;
+      color: rgba(255,255,255,.65); transition: all .15s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .nav-btn svg { width: 15px; height: 15px; stroke-width: 1.8; }
+    .nav-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+    .nav-btn.active { background: var(--orange); color: #fff; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: rgba(255,255,255,.7); }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--salmon); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--navy); }
+    .logout-btn { background: none; border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.7); padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .logout-btn svg { width: 13px; height: 13px; }
+    .logout-btn:hover { border-color: rgba(255,255,255,.5); color: #fff; }
+
+    .app-body { flex: 1; display: flex; overflow: hidden; }
+    .content { flex: 1; overflow-y: auto; padding: 28px 32px; }
+
+    /* ── PAGES ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .page-header h1 { font-size: 22px; font-weight: 700; color: var(--navy); }
+    .page-header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; transition: all .15s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn svg { width: 14px; height: 14px; stroke-width: 2; }
+    .btn-primary { background: var(--orange); color: #fff; }
+    .btn-primary:hover { background: #a33a22; }
+    .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+    .btn-navy { background: var(--navy); color: #fff; }
+    .btn-navy:hover { background: #0d2d56; }
+    .btn-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+    .btn-danger:hover { background: #fca5a5; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-sm svg { width: 12px; height: 12px; }
+    .btn-full { width: 100%; justify-content: center; }
+
+    /* ── CARDS ── */
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .card-p { padding: 20px; }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+    .form-input, .form-select {
+      width: 100%; padding: 9px 12px;
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 14px;
+      outline: none; font-family: inherit; transition: border-color .15s;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--orange); background: var(--white); }
+
+    /* ── DASHBOARD METRICS ── */
+    .metric-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+    .metric-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      box-shadow: var(--shadow); border-left: 4px solid var(--border);
+    }
+    .metric-card.c1 { border-left-color: var(--navy); }
+    .metric-card.c2 { border-left-color: var(--orange); }
+    .metric-card.c3 { border-left-color: var(--salmon); }
+    .metric-card.c4 { border-left-color: #dc2626; }
+    .metric-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .metric-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .metric-icon svg { width: 18px; height: 18px; stroke-width: 1.8; }
+    .metric-icon.i1 { background: #e8edf5; color: var(--navy); }
+    .metric-icon.i2 { background: #fdf0ec; color: var(--orange); }
+    .metric-icon.i3 { background: #faf0ee; color: var(--salmon); }
+    .metric-icon.i4 { background: #fee2e2; color: #dc2626; }
+    .metric-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); }
+    .metric-value { font-size: 36px; font-weight: 800; color: var(--navy); line-height: 1.1; margin: 4px 0 2px; }
+    .metric-sub { font-size: 12px; color: var(--muted); }
+
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); margin-bottom: 14px; }
+
+    .squad-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .squad-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+    .squad-card-name { font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+    .squad-card-tribo { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .chip { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .chip-navy { background: #e8edf5; color: var(--navy); }
+    .chip-orange { background: #fdf0ec; color: var(--orange); }
+    .chip-salmon { background: #faf0ee; color: #9b5a4a; }
+    .chip-warn { background: #fef9ec; color: #b45309; border: 1px solid #fcd34d; }
+    .chip-pool { background: #f0f9ff; color: #0369a1; }
+
+    /* ── TABLE ── */
+    .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .search-wrap { flex: 1; min-width: 220px; position: relative; }
+    .search-wrap .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); display: flex; }
+    .search-wrap .search-icon svg { width: 14px; height: 14px; }
+    .search-box {
+      width: 100%; padding: 9px 12px 9px 34px;
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 13px; outline: none;
+      color: var(--text); font-family: inherit;
+    }
+    .search-box:focus { border-color: var(--orange); }
+    .filter-sel {
+      padding: 9px 12px; background: var(--white);
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 13px; color: var(--text); outline: none;
+      font-family: inherit; cursor: pointer;
+    }
+    .filter-sel:focus { border-color: var(--orange); }
+
+    .table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { text-align: left; padding: 11px 16px; background: var(--navy); color: rgba(255,255,255,.8); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fdf5f3; }
+    tbody td { padding: 13px 16px; vertical-align: middle; }
+
+    .status-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+    .s-ativo   { background: #dcfce7; color: #166534; }
+    .s-inativo { background: #fee2e2; color: #991b1b; }
+    .s-pool    { background: #f0f9ff; color: #0369a1; }
+
+    .inline-sel {
+      background: var(--bg); border: 1.5px solid var(--border);
+      color: var(--text); border-radius: 6px; padding: 5px 8px;
+      font-size: 12px; cursor: pointer; outline: none; font-family: inherit;
+    }
+    .inline-sel:focus { border-color: var(--orange); }
+
+    .action-btns { display: flex; gap: 6px; }
+
+    /* ── SQUADS PAGE ── */
+    .squad-block { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; box-shadow: var(--shadow); overflow: hidden; }
+    .squad-block-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; border-left: 4px solid var(--orange); }
+    .squad-block-header:hover { background: #fdf5f3; }
+    .squad-chevron { transition: transform .2s; color: var(--muted); display: flex; }
+    .squad-chevron svg { width: 16px; height: 16px; }
+    .squad-chevron.open { transform: rotate(180deg); }
+    .squad-block-body { padding: 16px 20px; display: none; border-top: 1px solid var(--border); }
+    .squad-block-body.open { display: flex; flex-wrap: wrap; gap: 8px; }
+    .member-pill { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 13px; }
+
+    /* ── UPLOAD STEPPER ── */
+    .stepper { display: flex; margin-bottom: 28px; }
+    .step-item { flex: 1; text-align: center; padding: 12px 8px; border-bottom: 3px solid var(--border); font-size: 12px; font-weight: 600; color: var(--muted); transition: all .2s; }
+    .step-item.active { border-color: var(--orange); color: var(--orange); }
+    .step-item.done   { border-color: var(--navy);   color: var(--navy); }
+    .step-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--border); color: var(--muted); font-size: 11px; font-weight: 800; margin-bottom: 5px; }
+    .step-item.active .step-num { background: var(--orange); color: #fff; }
+    .step-item.done   .step-num { background: var(--navy);   color: #fff; }
+
+    .upload-drop {
+      border: 2px dashed var(--border); border-radius: 12px;
+      padding: 60px 40px; text-align: center; cursor: pointer; transition: all .2s;
+    }
+    .upload-drop:hover, .upload-drop.drag { border-color: var(--orange); background: #fdf5f3; }
+    .upload-drop-icon { display: flex; justify-content: center; margin-bottom: 16px; color: var(--salmon); }
+    .upload-drop-icon svg { width: 48px; height: 48px; stroke-width: 1.2; }
+    .upload-text { color: var(--muted); font-size: 14px; }
+    .upload-text strong { color: var(--orange); }
+    .upload-formats { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .map-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .map-table th { text-align: left; padding: 9px 14px; background: var(--navy); color: rgba(255,255,255,.8); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+    .map-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); }
+
+    .preview-wrap { overflow-x: auto; }
+    .preview-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .preview-tbl th { background: var(--navy); color: rgba(255,255,255,.8); padding: 8px 12px; text-align: left; font-size: 11px; }
+    .preview-tbl td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    .preview-tbl tr.err td { background: #fef2f2; }
+    .preview-tbl tr.ok  td { background: #f0fdf4; }
+
+    .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 8px; }
+    .alert svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+    .alert-warn { background: #fefce8; border: 1px solid #fde047; color: #854d0e; }
+    .alert-ok   { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+    .alert-info { background: #eff6ff; border: 1px solid #93c5fd; color: #1e40af; }
+
+    /* ── MODAL ── */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(9,32,64,.5); z-index: 100; align-items: center; justify-content: center; }
+    .overlay.open { display: flex; }
+    .modal { background: var(--white); border-radius: 14px; width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(9,32,64,.25); }
+    .modal-hdr { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-hdr h2 { font-size: 16px; font-weight: 700; color: var(--navy); }
+    .modal-close { background: none; border: none; cursor: pointer; color: var(--muted); display: flex; align-items: center; padding: 2px; border-radius: 4px; }
+    .modal-close svg { width: 20px; height: 20px; }
+    .modal-close:hover { color: var(--orange); }
+    .modal-body   { padding: 20px 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* ── ROLES PAGE ── */
+    .role-tag { display: inline-flex; align-items: center; gap: 8px; background: var(--white); border: 1.5px solid var(--border); border-radius: 20px; padding: 7px 16px; font-size: 13px; font-weight: 600; color: var(--navy); margin: 4px; }
+    .role-rm { cursor: pointer; color: var(--muted); display: flex; align-items: center; }
+    .role-rm svg { width: 14px; height: 14px; }
+    .role-rm:hover { color: #dc2626; }
+
+    /* ── HISTORY ── */
+    .hist-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; align-items: flex-start; }
+    .hist-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); margin-top: 4px; flex-shrink: 0; }
+
+    /* ── SUCCESS ── */
+    .success-icon { display: flex; justify-content: center; margin-bottom: 16px; color: var(--orange); }
+    .success-icon svg { width: 64px; height: 64px; stroke-width: 1.2; }
+
+    /* ── TOAST ── */
+    .toast-area { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 999; }
+    .toast { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-size: 13px; box-shadow: 0 4px 20px rgba(9,32,64,.15); animation: slideIn .2s ease; display: flex; align-items: center; gap: 8px; min-width: 240px; }
+    .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .toast.success { border-left: 4px solid #22c55e; }
+    .toast.success svg { color: #22c55e; }
+    .toast.error   { border-left: 4px solid #ef4444; }
+    .toast.error svg { color: #ef4444; }
+    .toast.info    { border-left: 4px solid var(--orange); }
+    .toast.info svg { color: var(--orange); }
+    @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    .empty { text-align: center; padding: 56px; color: var(--muted); }
+    .empty-icon { display: flex; justify-content: center; margin-bottom: 14px; color: var(--border); }
+    .empty-icon svg { width: 48px; height: 48px; stroke-width: 1.2; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Agile<span>Manager</span></div>
+    <div class="login-sub">Gestão de agilistas · Governança ágil</div>
+    <div class="login-divider"></div>
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input class="form-input" id="login-email" placeholder="seu@email.com" type="email" value="admin@empresa.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input class="form-input" id="login-pass" placeholder="••••••••" type="password" value="123456" />
+    </div>
+    <button class="btn btn-navy btn-full" style="margin-top:8px" onclick="doLogin()">
+      <i data-lucide="log-in"></i> Entrar
+    </button>
+    <div class="login-hint">Protótipo — use qualquer credencial</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">Agile<span>Manager</span></div>
+    <div class="topbar-nav">
+      <button class="nav-btn active" onclick="goTo('dashboard',this)"><i data-lucide="layout-dashboard"></i> Dashboard</button>
+      <button class="nav-btn" onclick="goTo('agilistas',this)"><i data-lucide="users"></i> Agilistas</button>
+      <button class="nav-btn" onclick="goTo('squads',this)"><i data-lucide="layers"></i> Squads</button>
+      <button class="nav-btn" onclick="goTo('upload',this)"><i data-lucide="upload"></i> Upload</button>
+      <button class="nav-btn" onclick="goTo('roles',this)"><i data-lucide="tag"></i> Roles</button>
+    </div>
+    <div class="topbar-right">
+      <div class="avatar" id="user-avatar">A</div>
+      <span id="user-name">Admin</span>
+      <button class="logout-btn" onclick="doLogout()"><i data-lucide="log-out"></i> Sair</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Visão geral da gestão de agilistas</p>
+          </div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric-card c1">
+            <div class="metric-top">
+              <div class="metric-label">Agilistas ativos</div>
+              <div class="metric-icon i1"><i data-lucide="users"></i></div>
+            </div>
+            <div class="metric-value" style="color:var(--navy)" id="m-total">12</div>
+            <div class="metric-sub">em squads ativas</div>
+          </div>
+          <div class="metric-card c2">
+            <div class="metric-top">
+              <div class="metric-label">Squads ativas</div>
+              <div class="metric-icon i2"><i data-lucide="layers"></i></div>
+            </div>
+            <div class="metric-value" style="color:var(--orange)" id="m-squads">6</div>
+            <div class="metric-sub">em 2 tribos</div>
+          </div>
+          <div class="metric-card c3">
+            <div class="metric-top">
+              <div class="metric-label">Pool (sem squad)</div>
+              <div class="metric-icon i3"><i data-lucide="user-minus"></i></div>
+            </div>
+            <div class="metric-value" style="color:var(--salmon)" id="m-pool">2</div>
+            <div class="metric-sub">aguardando alocação</div>
+          </div>
+          <div class="metric-card c4">
+            <div class="metric-top">
+              <div class="metric-label">Squads sem agilista</div>
+              <div class="metric-icon i4"><i data-lucide="alert-triangle"></i></div>
+            </div>
+            <div class="metric-value" style="color:#dc2626" id="m-empty">1</div>
+            <div class="metric-sub">atenção necessária</div>
+          </div>
+        </div>
+        <div class="section-label">Mapa de alocação</div>
+        <div class="squad-grid" id="dash-squad-grid"></div>
+      </div>
+
+      <!-- AGILISTAS -->
+      <div class="page" id="page-agilistas">
+        <div class="page-header">
+          <div>
+            <h1>Agilistas</h1>
+            <p>Gerencie todos os agilistas do time de governança</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModalAgilista()"><i data-lucide="user-plus"></i> Novo Agilista</button>
+        </div>
+        <div class="filters">
+          <div class="search-wrap">
+            <span class="search-icon"><i data-lucide="search"></i></span>
+            <input class="search-box" placeholder="Buscar por nome ou e-mail..." oninput="filterTable()" id="search-input" />
+          </div>
+          <select class="filter-sel" onchange="filterTable()" id="filter-role"><option value="">Todas as roles</option></select>
+          <select class="filter-sel" onchange="filterTable()" id="filter-squad"><option value="">Todas as squads</option></select>
+          <select class="filter-sel" onchange="filterTable()" id="filter-status">
+            <option value="">Todos os status</option>
+            <option>Ativo</option><option>Inativo</option><option>Pool</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Role</th><th>Squad</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="agilistas-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SQUADS -->
+      <div class="page" id="page-squads">
+        <div class="page-header">
+          <div>
+            <h1>Squads</h1>
+            <p>Crie, edite e organize as squads do time</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModalSquad()"><i data-lucide="plus"></i> Nova Squad</button>
+        </div>
+        <div id="squads-list"></div>
+      </div>
+
+      <!-- UPLOAD -->
+      <div class="page" id="page-upload">
+        <div class="page-header">
+          <div>
+            <h1>Upload de Planilha</h1>
+            <p>Importe ou atualize agilistas via arquivo .xlsx ou .csv</p>
+          </div>
+        </div>
+        <div class="stepper">
+          <div class="step-item active" id="st1"><div class="step-num">1</div><br>Upload</div>
+          <div class="step-item" id="st2"><div class="step-num">2</div><br>Mapeamento</div>
+          <div class="step-item" id="st3"><div class="step-num">3</div><br>Validação</div>
+          <div class="step-item" id="st4"><div class="step-num">4</div><br>Confirmação</div>
+        </div>
+
+        <!-- Step 1 -->
+        <div id="us1">
+          <div class="card card-p">
+            <div class="upload-drop" id="drop-zone"
+              onclick="document.getElementById('file-inp').click()"
+              ondragover="event.preventDefault();this.classList.add('drag')"
+              ondragleave="this.classList.remove('drag')"
+              ondrop="handleDrop(event)">
+              <div class="upload-drop-icon"><i data-lucide="file-up"></i></div>
+              <div class="upload-text">Arraste um arquivo aqui ou <strong>clique para selecionar</strong></div>
+              <div class="upload-formats">Suporta .xlsx e .csv</div>
+            </div>
+            <input type="file" id="file-inp" accept=".xlsx,.csv" style="display:none" onchange="handleFile(event)" />
+            <div style="margin-top:16px">
+              <div class="alert alert-info">
+                <i data-lucide="info"></i>
+                Se você já importou esta planilha antes, o mapeamento de colunas será carregado automaticamente.
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:4px" onclick="simFile()">
+              <i data-lucide="play"></i> Usar planilha de exemplo
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div id="us2" style="display:none">
+          <div class="card card-p">
+            <div id="map-saved-notice"></div>
+            <div class="alert alert-warn">
+              <i data-lucide="alert-triangle"></i>
+              Mapeie as colunas da planilha para os campos do sistema. Campos com * são obrigatórios.
+            </div>
+            <table class="map-table">
+              <thead><tr><th>Coluna na planilha</th><th>Amostra do conteúdo</th><th>Campo do sistema</th></tr></thead>
+              <tbody id="map-tbody"></tbody>
+            </table>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+              <button class="btn btn-secondary" onclick="goStep(1)"><i data-lucide="chevron-left"></i> Voltar</button>
+              <button class="btn btn-primary" onclick="goStep(3)">Confirmar mapeamento <i data-lucide="chevron-right"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="us3" style="display:none">
+          <div class="card card-p">
+            <div id="preview-alert"></div>
+            <div class="preview-wrap">
+              <table class="preview-tbl">
+                <thead id="prev-head"></thead>
+                <tbody id="prev-body"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+              <button class="btn btn-secondary" onclick="goStep(2)"><i data-lucide="chevron-left"></i> Voltar</button>
+              <button class="btn btn-primary" onclick="goStep(4)">Importar dados <i data-lucide="chevron-right"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div id="us4" style="display:none">
+          <div class="card card-p" style="text-align:center;padding:48px">
+            <div class="success-icon"><i data-lucide="check-circle"></i></div>
+            <div style="font-size:22px;font-weight:800;color:var(--navy);margin-bottom:8px">Importação concluída!</div>
+            <div class="alert alert-ok" style="display:inline-flex;margin-top:16px" id="import-summary"></div>
+            <div style="margin-top:24px;display:flex;gap:10px;justify-content:center">
+              <button class="btn btn-navy" onclick="goTo('agilistas', document.querySelector('.nav-btn:nth-child(2)'))">
+                Ver agilistas <i data-lucide="arrow-right"></i>
+              </button>
+              <button class="btn btn-secondary" onclick="resetUpload()">
+                <i data-lucide="refresh-cw"></i> Importar outro arquivo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROLES -->
+      <div class="page" id="page-roles">
+        <div class="page-header">
+          <div>
+            <h1>Roles</h1>
+            <p>Gerencie as roles disponíveis para os agilistas</p>
+          </div>
+        </div>
+        <div class="card card-p">
+          <div class="section-label" style="margin-bottom:12px">Roles cadastradas</div>
+          <div id="roles-list"></div>
+          <div style="display:flex;gap:10px;margin-top:20px;align-items:center;border-top:1px solid var(--border);padding-top:16px">
+            <input class="form-input" style="max-width:240px" placeholder="Nome da nova role..." id="new-role-inp" onkeydown="if(event.key==='Enter')addRole()" />
+            <button class="btn btn-primary btn-sm" onclick="addRole()"><i data-lucide="plus"></i> Adicionar</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Agilista -->
+<div class="overlay" id="modal-ag">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2 id="modal-ag-title">Novo Agilista</h2>
+      <button class="modal-close" onclick="closeModal('modal-ag')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nome *</label><input class="form-input" id="f-nome" placeholder="Nome completo" /></div>
+      <div class="form-group"><label class="form-label">E-mail</label><input class="form-input" id="f-email" placeholder="email@empresa.com" type="email" /></div>
+      <div class="form-group"><label class="form-label">Role *</label><select class="form-select" id="f-role"><option value="">Selecione...</option></select></div>
+      <div class="form-group"><label class="form-label">Squad</label><select class="form-select" id="f-squad"><option value="">— Pool (sem squad) —</option></select></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="f-status"><option>Ativo</option><option>Inativo</option><option>Pool</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-ag')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveAgilista()"><i data-lucide="save"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Squad -->
+<div class="overlay" id="modal-sq">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2 id="modal-sq-title">Nova Squad</h2>
+      <button class="modal-close" onclick="closeModal('modal-sq')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nome da Squad *</label><input class="form-input" id="f-sq-nome" placeholder="Ex: Squad Pagamentos" /></div>
+      <div class="form-group"><label class="form-label">Tribo / Área</label><input class="form-input" id="f-sq-tribo" placeholder="Ex: Tribo Financeiro" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-sq')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSquad()"><i data-lucide="save"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Histórico -->
+<div class="overlay" id="modal-hist">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>Histórico de Alocação</h2>
+      <button class="modal-close" onclick="closeModal('modal-hist')"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" id="hist-body"></div>
+  </div>
+</div>
+
+<div class="toast-area" id="toast-area"></div>
+
+<script>
+const S = {
+  user: null,
+  roles: ['SM', 'PMO', 'Agile Coach', 'RTE'],
+  squads: [
+    { id:1, nome:'Squad Pagamentos', tribo:'Tribo Financeiro' },
+    { id:2, nome:'Squad Cadastro',   tribo:'Tribo Core' },
+    { id:3, nome:'Squad Relatórios', tribo:'Tribo Dados' },
+    { id:4, nome:'Squad Mobile',     tribo:'Tribo Digital' },
+    { id:5, nome:'Squad API',        tribo:'Tribo Core' },
+    { id:6, nome:'Squad DevOps',     tribo:'Tribo Plataforma' },
+  ],
+  agilistas: [
+    { id:1,  nome:'Ana Lima',       email:'ana@empresa.com',    role:'SM',          squad_id:1,   status:'Ativo' },
+    { id:2,  nome:'Carlos Souza',   email:'carlos@empresa.com', role:'PMO',         squad_id:1,   status:'Ativo' },
+    { id:3,  nome:'Beatriz Costa',  email:'bia@empresa.com',    role:'Agile Coach', squad_id:2,   status:'Ativo' },
+    { id:4,  nome:'Diego Ferreira', email:'diego@empresa.com',  role:'SM',          squad_id:3,   status:'Ativo' },
+    { id:5,  nome:'Elisa Martins',  email:'elisa@empresa.com',  role:'RTE',         squad_id:4,   status:'Ativo' },
+    { id:6,  nome:'Felipe Rocha',   email:'felipe@empresa.com', role:'SM',          squad_id:5,   status:'Ativo' },
+    { id:7,  nome:'Gabriela Nunes', email:'gabi@empresa.com',   role:'PMO',         squad_id:5,   status:'Ativo' },
+    { id:8,  nome:'Hugo Alves',     email:'hugo@empresa.com',   role:'SM',          squad_id:6,   status:'Ativo' },
+    { id:9,  nome:'Isabela Torres', email:'isa@empresa.com',    role:'Agile Coach', squad_id:6,   status:'Ativo' },
+    { id:10, nome:'João Pedro',     email:'joao@empresa.com',   role:'SM',          squad_id:null, status:'Pool' },
+    { id:11, nome:'Karina Melo',    email:'karina@empresa.com', role:'PMO',         squad_id:null, status:'Pool' },
+    { id:12, nome:'Lucas Borges',   email:'lucas@empresa.com',  role:'SM',          squad_id:2,   status:'Inativo' },
+  ],
+  history: [
+    { ag_id:1,  squad:'Squad Pagamentos', ini:'2024-01-10', fim:null },
+    { ag_id:1,  squad:'Squad Mobile',     ini:'2023-06-01', fim:'2024-01-09' },
+    { ag_id:10, squad:'Squad Relatórios', ini:'2023-03-01', fim:'2024-12-15' },
+  ],
+  uploadData: null, savedMaps: {}, editAg: null, editSq: null,
+};
+let nextId = 13;
+const chipRole = { SM:'chip-navy', PMO:'chip-orange', 'Agile Coach':'chip-salmon', RTE:'chip-pool' };
+
+function ic(name) { return `<i data-lucide="${name}"></i>`; }
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim() || 'admin@empresa.com';
+  const name  = email.split('@')[0];
+  S.user = { email, name };
+  document.getElementById('user-name').textContent   = name;
+  document.getElementById('user-avatar').textContent = name[0].toUpperCase();
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  renderDash();
+  lucide.createIcons();
+}
+
+function doLogout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('visible');
+}
+
+const renders = { dashboard: renderDash, agilistas: renderAgilistas, squads: renderSquads, roles: renderRoles };
+
+function goTo(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+  renders[page]?.();
+  lucide.createIcons();
+}
+
+function renderDash() {
+  const active = S.agilistas.filter(a => a.status === 'Ativo').length;
+  const pool   = S.agilistas.filter(a => a.status === 'Pool').length;
+  const empty  = S.squads.filter(sq => !S.agilistas.find(a => a.squad_id === sq.id && a.status === 'Ativo')).length;
+  document.getElementById('m-total').textContent  = active;
+  document.getElementById('m-squads').textContent = S.squads.length;
+  document.getElementById('m-pool').textContent   = pool;
+  document.getElementById('m-empty').textContent  = empty;
+
+  document.getElementById('dash-squad-grid').innerHTML = S.squads.map(sq => {
+    const members = S.agilistas.filter(a => a.squad_id === sq.id && a.status === 'Ativo');
+    return `<div class="squad-card">
+      <div class="squad-card-name">${sq.nome}</div>
+      <div class="squad-card-tribo">${sq.tribo}</div>
+      <div class="chip-row">
+        ${members.length
+          ? members.map(m => `<span class="chip ${chipRole[m.role]||'chip-navy'}">${m.role}: ${m.nome.split(' ')[0]}</span>`).join('')
+          : `<span class="chip chip-warn">Sem agilista</span>`}
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function renderAgilistas() {
+  const fr = document.getElementById('filter-role');
+  fr.innerHTML = '<option value="">Todas as roles</option>' + S.roles.map(r => `<option>${r}</option>`).join('');
+  const fs = document.getElementById('filter-squad');
+  fs.innerHTML = '<option value="">Todas as squads</option>' + S.squads.map(s => `<option>${s.nome}</option>`).join('');
+  filterTable();
+}
+
+function filterTable() {
+  const q  = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const ro = document.getElementById('filter-role')?.value   || '';
+  const sq = document.getElementById('filter-squad')?.value  || '';
+  const st = document.getElementById('filter-status')?.value || '';
+
+  const list = S.agilistas.filter(a => {
+    const sqName = S.squads.find(s => s.id === a.squad_id)?.nome || '';
+    if (q  && !a.nome.toLowerCase().includes(q) && !a.email.toLowerCase().includes(q)) return false;
+    if (ro && a.role !== ro)    return false;
+    if (sq && sqName !== sq)    return false;
+    if (st && a.status !== st)  return false;
+    return true;
+  });
+
+  const stClass = { Ativo:'s-ativo', Inativo:'s-inativo', Pool:'s-pool' };
+  const tbody = document.getElementById('agilistas-tbody');
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty">
+      <div class="empty-icon"><i data-lucide="search-x"></i></div>
+      Nenhum agilista encontrado.
+    </div></td></tr>`;
+    lucide.createIcons(); return;
+  }
+
+  tbody.innerHTML = list.map(a => {
+    const sqOpts = '<option value="">Pool</option>' +
+      S.squads.map(s => `<option value="${s.id}" ${s.id===a.squad_id?'selected':''}>${s.nome}</option>`).join('');
+    return `<tr>
+      <td><strong>${a.nome}</strong></td>
+      <td style="color:var(--muted)">${a.email}</td>
+      <td><span class="chip ${chipRole[a.role]||'chip-navy'}">${a.role}</span></td>
+      <td><select class="inline-sel" onchange="changeSquad(${a.id},this.value)">${sqOpts}</select></td>
+      <td><span class="status-badge ${stClass[a.status]}">${a.status}</span></td>
+      <td><div class="action-btns">
+        <button class="btn btn-secondary btn-sm" onclick="openModalAgilista(${a.id})" title="Editar">${ic('pencil')}</button>
+        <button class="btn btn-secondary btn-sm" onclick="showHist(${a.id})" title="Histórico">${ic('clock')}</button>
+        <button class="btn btn-danger btn-sm" onclick="delAg(${a.id})" title="Remover">${ic('trash-2')}</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function changeSquad(id, sqId) {
+  const a  = S.agilistas.find(x => x.id === id);
+  a.squad_id = sqId ? +sqId : null;
+  a.status   = a.squad_id ? 'Ativo' : 'Pool';
+  const sq = S.squads.find(s => s.id === a.squad_id);
+  S.history.push({ ag_id: id, squad: sq?.nome || 'Pool', ini: today(), fim: null });
+  toast(`${a.nome} realocado para ${sq?.nome || 'Pool'}`, 'success');
+  filterTable();
+}
+
+function delAg(id) {
+  if (!confirm('Remover este agilista?')) return;
+  S.agilistas = S.agilistas.filter(a => a.id !== id);
+  filterTable();
+  toast('Agilista removido', 'error');
+}
+
+function renderSquads() {
+  document.getElementById('squads-list').innerHTML = S.squads.map(sq => {
+    const members = S.agilistas.filter(a => a.squad_id === sq.id);
+    return `<div class="squad-block">
+      <div class="squad-block-header" onclick="toggleSq(this)">
+        <div>
+          <strong style="color:var(--navy)">${sq.nome}</strong>
+          <span style="color:var(--muted);font-size:12px;margin-left:10px">${sq.tribo}</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="color:var(--muted);font-size:12px">${members.length} agilista(s)</span>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openModalSquad(${sq.id})" title="Editar">${ic('pencil')}</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();delSq(${sq.id})" title="Remover">${ic('trash-2')}</button>
+          <span class="squad-chevron"><i data-lucide="chevron-down"></i></span>
+        </div>
+      </div>
+      <div class="squad-block-body">
+        ${members.length
+          ? members.map(m => `<div class="member-pill">
+              <span class="chip ${chipRole[m.role]||'chip-navy'}">${m.role}</span>
+              <span>${m.nome}</span>
+              <span class="status-badge ${m.status==='Ativo'?'s-ativo':'s-inativo'}" style="font-size:10px">${m.status}</span>
+            </div>`).join('')
+          : `<span style="color:var(--muted);font-size:13px">Nenhum agilista alocado nesta squad.</span>`}
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function toggleSq(hdr) {
+  hdr.nextElementSibling.classList.toggle('open');
+  hdr.querySelector('.squad-chevron').classList.toggle('open');
+}
+
+function delSq(id) {
+  const cnt = S.agilistas.filter(a => a.squad_id === id).length;
+  if (cnt && !confirm(`${cnt} agilista(s) irão para o Pool. Continuar?`)) return;
+  S.agilistas.filter(a => a.squad_id === id).forEach(a => { a.squad_id = null; a.status = 'Pool'; });
+  S.squads = S.squads.filter(s => s.id !== id);
+  renderSquads();
+  toast('Squad removida', 'error');
+}
+
+function renderRoles() {
+  document.getElementById('roles-list').innerHTML =
+    S.roles.map((r, i) => `<span class="role-tag">${r}
+      <span class="role-rm" onclick="delRole(${i})">${ic('x')}</span>
+    </span>`).join('') ||
+    `<span style="color:var(--muted);font-size:13px">Nenhuma role cadastrada.</span>`;
+  lucide.createIcons();
+}
+
+function addRole() {
+  const v = document.getElementById('new-role-inp').value.trim();
+  if (!v) return;
+  if (S.roles.includes(v)) { toast('Role já existe', 'error'); return; }
+  S.roles.push(v);
+  document.getElementById('new-role-inp').value = '';
+  renderRoles();
+  toast('Role adicionada', 'success');
+}
+
+function delRole(i) {
+  if (!confirm(`Remover "${S.roles[i]}"?`)) return;
+  S.roles.splice(i, 1);
+  renderRoles();
+  toast('Role removida', 'error');
+}
+
+function openModalAgilista(id) {
+  S.editAg = id || null;
+  const a = id ? S.agilistas.find(x => x.id === id) : null;
+  document.getElementById('modal-ag-title').textContent = a ? 'Editar Agilista' : 'Novo Agilista';
+  document.getElementById('f-role').innerHTML  = '<option value="">Selecione...</option>' + S.roles.map(r => `<option ${r===a?.role?'selected':''}>${r}</option>`).join('');
+  document.getElementById('f-squad').innerHTML = '<option value="">— Pool —</option>' + S.squads.map(s => `<option value="${s.id}" ${s.id===a?.squad_id?'selected':''}>${s.nome}</option>`).join('');
+  document.getElementById('f-nome').value   = a?.nome   || '';
+  document.getElementById('f-email').value  = a?.email  || '';
+  document.getElementById('f-status').value = a?.status || 'Ativo';
+  document.getElementById('modal-ag').classList.add('open');
+  lucide.createIcons();
+}
+
+function saveAgilista() {
+  const nome = document.getElementById('f-nome').value.trim();
+  const role = document.getElementById('f-role').value;
+  if (!nome || !role) { toast('Nome e Role são obrigatórios', 'error'); return; }
+  const squad_id = +document.getElementById('f-squad').value || null;
+  const status   = document.getElementById('f-status').value;
+  const email    = document.getElementById('f-email').value.trim();
+  if (S.editAg) {
+    Object.assign(S.agilistas.find(x => x.id === S.editAg), { nome, email, role, squad_id, status });
+    toast('Agilista atualizado', 'success');
+  } else {
+    S.agilistas.push({ id: nextId++, nome, email, role, squad_id, status });
+    toast('Agilista criado', 'success');
+  }
+  closeModal('modal-ag'); filterTable();
+}
+
+function openModalSquad(id) {
+  S.editSq = id || null;
+  const sq = id ? S.squads.find(s => s.id === id) : null;
+  document.getElementById('modal-sq-title').textContent = sq ? 'Editar Squad' : 'Nova Squad';
+  document.getElementById('f-sq-nome').value  = sq?.nome  || '';
+  document.getElementById('f-sq-tribo').value = sq?.tribo || '';
+  document.getElementById('modal-sq').classList.add('open');
+  lucide.createIcons();
+}
+
+function saveSquad() {
+  const nome  = document.getElementById('f-sq-nome').value.trim();
+  const tribo = document.getElementById('f-sq-tribo').value.trim();
+  if (!nome) { toast('Nome da squad é obrigatório', 'error'); return; }
+  if (S.editSq) {
+    Object.assign(S.squads.find(s => s.id === S.editSq), { nome, tribo });
+    toast('Squad atualizada', 'success');
+  } else {
+    S.squads.push({ id: nextId++, nome, tribo });
+    toast('Squad criada', 'success');
+  }
+  closeModal('modal-sq'); renderSquads();
+}
+
+function showHist(id) {
+  const a = S.agilistas.find(x => x.id === id);
+  const entries = S.history.filter(h => h.ag_id === id);
+  document.getElementById('hist-body').innerHTML =
+    `<div style="font-weight:700;color:var(--navy);margin-bottom:16px">${a.nome}</div>` +
+    (entries.length
+      ? [...entries].reverse().map(h => `
+        <div class="hist-item">
+          <div class="hist-dot"></div>
+          <div>
+            <div style="font-weight:600">${h.squad}</div>
+            <div style="color:var(--muted);font-size:11px">${h.ini} &rarr; ${h.fim || 'atual'}</div>
+          </div>
+        </div>`).join('')
+      : `<div style="color:var(--muted);font-size:13px">Sem histórico registrado.</div>`);
+  document.getElementById('modal-hist').classList.add('open');
+  lucide.createIcons();
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// UPLOAD
+const SAMPLE = {
+  filename: 'gestao_agilistas.xlsx',
+  columns: ['Nome Completo','Cargo','E-mail corporativo','Time Agile','Situação'],
+  rows: [
+    ['Marina Silva',  'SM',          'marina@empresa.com',  'Squad Pagamentos','Ativo'],
+    ['Roberto Gomes', 'Agile Coach', 'roberto@empresa.com', 'Squad Nova',      'Ativo'],
+    ['Tatiane Luz',   'PMO',         'tatiane@empresa.com', 'Squad Cadastro',  'Inativo'],
+    ['Paulo Reis',    'RTE',         '',                    'Squad Dados',     'Ativo'],
+    ['Sandra Lima',   'SM',          'sandra@empresa.com',  '',                'Ativo'],
+  ]
+};
+
+const FIELDS = ['nome *','role *','email','squad','status','— ignorar —'];
+const GUESS  = {
+  'Nome Completo':'nome *', Nome:'nome *',
+  Cargo:'role *', Função:'role *', Role:'role *',
+  'E-mail':'email', 'E-mail corporativo':'email', Email:'email',
+  'Time Agile':'squad', Time:'squad', Squad:'squad',
+  Situação:'status', Status:'status',
+};
+
+function simFile()  { S.uploadData = SAMPLE; goStep(2); }
+function handleFile(e) {
+  const f = e.target.files[0]; if (!f) return;
+  S.uploadData = { filename: f.name, columns:['Col A','Col B','Col C'], rows:[] };
+  toast('Arquivo carregado', 'info'); goStep(2);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile({ target:{ files:[f] } });
+}
+
+function goStep(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById('us'+i).style.display = 'none';
+    const el = document.getElementById('st'+i);
+    el.classList.remove('active','done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+  document.getElementById('us'+n).style.display = 'block';
+  if (n===2) buildMapping();
+  if (n===3) buildPreview();
+  if (n===4) doImport();
+  lucide.createIcons();
+}
+
+function buildMapping() {
+  const d = S.uploadData;
+  const saved = S.savedMaps[d.filename];
+  document.getElementById('map-saved-notice').innerHTML = saved
+    ? `<div class="alert alert-ok"><i data-lucide="check-circle"></i> Mapeamento salvo para "${d.filename}" foi carregado automaticamente.</div>`
+    : '';
+
+  document.getElementById('map-tbody').innerHTML = d.columns.map((col, i) => {
+    const sel = saved?.[col] || GUESS[col] || '— ignorar —';
+    const preview = d.rows.slice(0,2).map(r => r[i]).filter(Boolean).join(', ');
+    const opts = FIELDS.map(f => `<option ${f===sel?'selected':''}>${f}</option>`).join('');
+    return `<tr>
+      <td><strong>${col}</strong></td>
+      <td style="color:var(--muted);font-size:12px">${preview || '—'}</td>
+      <td><select class="inline-sel" id="mf${i}" style="width:100%">${opts}</select></td>
+    </tr>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function buildPreview() {
+  const d = S.uploadData;
+  const map = {};
+  d.columns.forEach((col,i) => { map[col] = document.getElementById('mf'+i)?.value || '— ignorar —'; });
+  S.savedMaps[d.filename] = map;
+
+  const fi = {};
+  Object.entries(map).forEach(([col,f]) => { if (f !== '— ignorar —') fi[f.replace(' *','')] = d.columns.indexOf(col); });
+  S._fi = fi;
+
+  const alert = document.getElementById('preview-alert');
+  if (!('nome' in fi) || !('role' in fi)) {
+    alert.className = 'alert alert-warn';
+    alert.innerHTML = `<i data-lucide="alert-triangle"></i> Campos obrigatórios (Nome e Role) não mapeados.`;
+    alert.style.display = 'flex';
+  } else { alert.style.display = 'none'; }
+
+  const fields  = ['nome','role','email','squad','status'].filter(f => f in fi);
+  const sqNames = S.squads.map(s => s.nome.toLowerCase());
+  const rlNames = S.roles.map(r => r.toLowerCase());
+
+  document.getElementById('prev-head').innerHTML =
+    '<tr>' + fields.map(f => `<th>${f.toUpperCase()}</th>`).join('') + '<th>VALIDAÇÃO</th></tr>';
+
+  document.getElementById('prev-body').innerHTML = d.rows.map(row => {
+    const errs = [];
+    const nome = row[fi['nome']] || ''; if (!nome) errs.push('Nome vazio');
+    const role = row[fi['role']] || ''; if (!role) errs.push('Role vazia');
+    else if (!rlNames.includes(role.toLowerCase())) errs.push(`Role desconhecida: ${role}`);
+    const sq = fi['squad'] !== undefined ? (row[fi['squad']]||'') : '';
+    if (sq && !sqNames.includes(sq.toLowerCase())) errs.push(`Squad inexistente: ${sq}`);
+    const email = fi['email'] !== undefined ? (row[fi['email']]||'') : '';
+    if (!email) errs.push('E-mail vazio');
+
+    const vals  = fields.map(f => `<td>${row[fi[f]] || '<span style="color:var(--muted)">—</span>'}</td>`).join('');
+    const vCell = errs.length
+      ? `<td style="color:#dc2626;font-size:11px">Erro: ${errs.join(' · ')}</td>`
+      : `<td style="color:#166534">OK</td>`;
+    return `<tr class="${errs.length?'err':'ok'}">${vals}${vCell}</tr>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function doImport() {
+  const d = S.uploadData; const fi = S._fi || {};
+  const rlNames = S.roles.map(r => r.toLowerCase());
+  let created=0, updated=0, skipped=0;
+  d.rows.forEach(row => {
+    const nome  = fi.nome  !== undefined ? (row[fi.nome] ||'') : '';
+    const role  = fi.role  !== undefined ? (row[fi.role] ||'') : '';
+    const email = fi.email !== undefined ? (row[fi.email]||'') : '';
+    const sqN   = fi.squad !== undefined ? (row[fi.squad]||'') : '';
+    const st    = fi.status!== undefined ? (row[fi.status]||'Ativo') : 'Ativo';
+    if (!nome || !role || !rlNames.includes(role.toLowerCase())) { skipped++; return; }
+    const sq = S.squads.find(s => s.nome.toLowerCase() === sqN.toLowerCase());
+    const ex = S.agilistas.find(a => a.email && a.email === email);
+    if (ex) { Object.assign(ex, { nome, role, squad_id: sq?.id||null, status: st }); updated++; }
+    else    { S.agilistas.push({ id: nextId++, nome, email, role, squad_id: sq?.id||null, status: st }); created++; }
+  });
+  document.getElementById('import-summary').innerHTML =
+    `<i data-lucide="check-circle"></i> ${created} criados &nbsp;·&nbsp; ${updated} atualizados &nbsp;·&nbsp; ${skipped} ignorados`;
+  lucide.createIcons();
+}
+
+function resetUpload() {
+  S.uploadData = null;
+  document.getElementById('file-inp').value = '';
+  goStep(1);
+}
+
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function toast(msg, type='info') {
+  const icons = { success:'check-circle', error:'x-circle', info:'info' };
+  const area = document.getElementById('toast-area');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i data-lucide="${icons[type]}"></i> ${msg}`;
+  area.appendChild(el);
+  lucide.createIcons();
+  setTimeout(() => el.remove(), 3000);
+}
+
+// Init icons on first load
+document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+</script>
+</body>
+</html>
