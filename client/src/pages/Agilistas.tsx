@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { UserPlus, X, Save } from 'lucide-react'
 import { useStore } from '../store'
 import AgilistaTable from '../components/AgilistaTable'
 import { api } from '../api'
@@ -77,6 +78,7 @@ export default function Agilistas() {
   const selClass = 'px-3 py-2 bg-white border-[1.5px] border-[#E0E0E0] rounded-lg text-[13px] text-[#1a1a2e] outline-none focus:border-brand-red cursor-pointer'
   const labelClass = 'block text-[11px] font-bold text-navy uppercase tracking-[0.5px] mb-1.5'
   const inputClass = 'w-full px-3 py-2.5 bg-page-bg border-[1.5px] border-[#E0E0E0] rounded-lg text-sm outline-none focus:border-brand-red'
+  const selectClass = 'w-full px-3 py-2.5 bg-page-bg border-[1.5px] border-[#E0E0E0] rounded-lg text-sm outline-none focus:border-brand-red'
 
   return (
     <div>
@@ -90,7 +92,8 @@ export default function Agilistas() {
           onClick={openNew}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-brand-red text-white text-[13px] font-semibold rounded-lg hover:bg-[#a33a22] transition-colors"
         >
-          + Novo Agilista
+          <UserPlus size={14} strokeWidth={2} />
+          Novo Agilista
         </button>
       </div>
 
@@ -144,46 +147,29 @@ export default function Agilistas() {
               <h2 className="text-[16px] font-bold text-navy">
                 {modal.editing ? 'Editar Agilista' : 'Novo Agilista'}
               </h2>
-              <button onClick={closeModal} className="text-[#6b7280] hover:text-brand-red text-xl leading-none">×</button>
+              <button onClick={closeModal} className="text-[#6b7280] hover:text-brand-red p-0.5 rounded transition-colors">
+                <X size={20} />
+              </button>
             </div>
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className={labelClass}>Nome *</label>
-                <input
-                  className={inputClass}
-                  placeholder="Nome completo"
-                  value={form.nome}
-                  onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                />
+                <input className={inputClass} placeholder="Nome completo" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
               </div>
               <div>
                 <label className={labelClass}>E-mail</label>
-                <input
-                  className={inputClass}
-                  type="email"
-                  placeholder="email@empresa.com"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                />
+                <input className={inputClass} type="email" placeholder="email@empresa.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
                 <label className={labelClass}>Role *</label>
-                <select
-                  className={`w-full px-3 py-2.5 bg-page-bg border-[1.5px] border-[#E0E0E0] rounded-lg text-sm outline-none focus:border-brand-red`}
-                  value={form.role_id}
-                  onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))}
-                >
+                <select className={selectClass} value={form.role_id} onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))}>
                   <option value="">Selecione...</option>
                   {roles.map(r => <option key={r.id} value={r.id}>{r.nome}</option>)}
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Squad</label>
-                <select
-                  className={`w-full px-3 py-2.5 bg-page-bg border-[1.5px] border-[#E0E0E0] rounded-lg text-sm outline-none focus:border-brand-red`}
-                  value={form.squad_id}
-                  onChange={e => setForm(f => ({ ...f, squad_id: e.target.value }))}
-                >
+                <select className={selectClass} value={form.squad_id} onChange={e => setForm(f => ({ ...f, squad_id: e.target.value }))}>
                   <option value="">— Pool (sem squad) —</option>
                   {squads.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
                 </select>
@@ -191,11 +177,7 @@ export default function Agilistas() {
               {modal.editing && (
                 <div>
                   <label className={labelClass}>Status</label>
-                  <select
-                    className={`w-full px-3 py-2.5 bg-page-bg border-[1.5px] border-[#E0E0E0] rounded-lg text-sm outline-none focus:border-brand-red`}
-                    value={form.status}
-                    onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                  >
+                  <select className={selectClass} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
                     <option value="ativo">Ativo</option>
                     <option value="inativo">Inativo</option>
                   </select>
@@ -203,17 +185,15 @@ export default function Agilistas() {
               )}
             </div>
             <div className="flex justify-end gap-2.5 px-6 py-4 border-t border-[#E0E0E0]">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors"
-              >
+              <button onClick={closeModal} className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors">
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={!form.nome || !form.role_id || saving}
-                className="px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
               >
+                <Save size={13} />
                 {saving ? 'Salvando...' : 'Salvar'}
               </button>
             </div>

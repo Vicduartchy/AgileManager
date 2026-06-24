@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import {
+  LayoutDashboard, Users, Layers, Upload as UploadIcon, Tag, LogOut,
+} from 'lucide-react'
 import Dashboard from './pages/Dashboard'
 import Agilistas from './pages/Agilistas'
 import Squads from './pages/Squads'
@@ -8,11 +11,11 @@ import Roles from './pages/Roles'
 type Page = 'dashboard' | 'agilistas' | 'squads' | 'upload' | 'roles'
 
 const NAV = [
-  { id: 'dashboard' as Page, label: 'Dashboard' },
-  { id: 'agilistas' as Page, label: 'Agilistas' },
-  { id: 'squads' as Page, label: 'Squads' },
-  { id: 'upload' as Page, label: 'Upload' },
-  { id: 'roles' as Page, label: 'Roles' },
+  { id: 'dashboard' as Page, label: 'Dashboard', Icon: LayoutDashboard },
+  { id: 'agilistas' as Page, label: 'Agilistas', Icon: Users },
+  { id: 'squads' as Page, label: 'Squads', Icon: Layers },
+  { id: 'upload' as Page, label: 'Upload', Icon: UploadIcon },
+  { id: 'roles' as Page, label: 'Roles', Icon: Tag },
 ]
 
 export default function App() {
@@ -84,25 +87,26 @@ export default function App() {
           Agile<span className="text-salmon">Manager</span>
         </div>
         <nav className="flex gap-1">
-          {NAV.map(item => (
+          {NAV.map(({ id, label, Icon }) => (
             <button
-              key={item.id}
-              onClick={() => setPage(item.id)}
-              className="px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all"
+              key={id}
+              onClick={() => setPage(id)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all"
               style={{
-                background: page === item.id ? '#BF452A' : 'transparent',
-                color: page === item.id ? '#fff' : 'rgba(255,255,255,.65)',
+                background: page === id ? '#BF452A' : 'transparent',
+                color: page === id ? '#fff' : 'rgba(255,255,255,.65)',
                 border: 'none',
                 cursor: 'pointer',
               }}
             >
-              {item.label}
+              <Icon size={15} strokeWidth={1.8} />
+              {label}
             </button>
           ))}
         </nav>
         <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-content font-bold text-[13px]"
+            className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-[13px]"
             style={{ background: '#D99789', color: '#092040' }}
           >
             {user.name[0].toUpperCase()}
@@ -110,8 +114,9 @@ export default function App() {
           <span className="text-[13px] text-white/70">{user.name}</span>
           <button
             onClick={() => setUser(null)}
-            className="text-xs text-white/70 hover:text-white transition-colors px-3 py-1 rounded border border-white/20 hover:border-white/50"
+            className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white transition-colors px-3 py-1 rounded border border-white/20 hover:border-white/50"
           >
+            <LogOut size={13} />
             Sair
           </button>
         </div>

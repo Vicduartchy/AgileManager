@@ -1,12 +1,6 @@
 import { useEffect } from 'react'
+import { Users, Layers, UserMinus, AlertTriangle } from 'lucide-react'
 import { useStore } from '../store'
-
-const chipRole: Record<string, string> = {
-  SM: 'bg-[#e8edf5] text-navy',
-  PMO: 'bg-[#fdf0ec] text-brand-red',
-  'Agile Coach': 'bg-[#faf0ee] text-[#9b5a4a]',
-  RTE: 'bg-[#f0f9ff] text-[#0369a1]',
-}
 
 export default function Dashboard() {
   const { squads, agilistas, fetchAll, loading } = useStore()
@@ -27,6 +21,9 @@ export default function Dashboard() {
       sub: 'em squads ativas',
       borderColor: '#092040',
       valueColor: 'text-navy',
+      iconBg: '#e8edf5',
+      iconColor: '#092040',
+      Icon: Users,
     },
     {
       label: 'Squads Ativas',
@@ -34,6 +31,9 @@ export default function Dashboard() {
       sub: 'no total',
       borderColor: '#BF452A',
       valueColor: 'text-brand-red',
+      iconBg: '#fdf0ec',
+      iconColor: '#BF452A',
+      Icon: Layers,
     },
     {
       label: 'Pool (sem squad)',
@@ -41,6 +41,9 @@ export default function Dashboard() {
       sub: 'aguardando alocação',
       borderColor: '#D99789',
       valueColor: 'text-salmon',
+      iconBg: '#faf0ee',
+      iconColor: '#D99789',
+      Icon: UserMinus,
     },
     {
       label: 'Squads Sem Agilista',
@@ -48,6 +51,9 @@ export default function Dashboard() {
       sub: 'atenção necessária',
       borderColor: '#dc2626',
       valueColor: 'text-red-600',
+      iconBg: '#fee2e2',
+      iconColor: '#dc2626',
+      Icon: AlertTriangle,
     },
   ]
 
@@ -58,19 +64,27 @@ export default function Dashboard() {
         <p className="text-[13px] text-[#6b7280] mt-0.5">Visão geral da gestão de agilistas</p>
       </div>
 
-      {/* Metric cards — label is a direct child of the card div so closest('div') finds the card */}
+      {/* Metric cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {metrics.map(m => (
+        {metrics.map(({ label, value, sub, borderColor, valueColor, iconBg, iconColor, Icon }) => (
           <div
-            key={m.label}
-            className="bg-white border border-[#E0E0E0] rounded-[10px] p-5"
-            style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)', borderLeft: `4px solid ${m.borderColor}` }}
+            key={label}
+            className="bg-white border border-[#E0E0E0] rounded-[10px] p-5 relative"
+            style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)', borderLeft: `4px solid ${borderColor}` }}
           >
-            <span className="block text-[11px] font-bold uppercase tracking-[0.7px] text-[#6b7280] mb-2">
-              {m.label}
+            {/* icon floated top-right — not a div so closest('div') skips it */}
+            <span
+              className="absolute top-4 right-4 w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: iconBg, color: iconColor }}
+            >
+              <Icon size={18} strokeWidth={1.8} />
             </span>
-            <div className={`text-[36px] font-extrabold leading-none mb-0.5 ${m.valueColor}`}>{m.value}</div>
-            <div className="text-[12px] text-[#6b7280]">{m.sub}</div>
+            {/* label is a direct child span — closest('div') finds the card div */}
+            <span className="block text-[11px] font-bold uppercase tracking-[0.7px] text-[#6b7280] mb-2 pr-12">
+              {label}
+            </span>
+            <div className={`text-[36px] font-extrabold leading-none mb-0.5 ${valueColor}`}>{value}</div>
+            <div className="text-[12px] text-[#6b7280]">{sub}</div>
           </div>
         ))}
       </div>
@@ -95,14 +109,11 @@ export default function Dashboard() {
                     Sem agilista
                   </span>
                 ) : (
-                  squad.agilistas.map(a => {
-                    const cls = chipRole['SM'] || 'bg-[#e8edf5] text-navy'
-                    return (
-                      <span key={a.id} className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${cls}`}>
-                        {a.nome.split(' ')[0]}
-                      </span>
-                    )
-                  })
+                  squad.agilistas.map(a => (
+                    <span key={a.id} className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#e8edf5] text-navy">
+                      {a.nome.split(' ')[0]}
+                    </span>
+                  ))
                 )}
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { FileUp, AlertTriangle, CheckCircle, Info, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
 import { useStore } from '../store'
 import { parseSheet, type ParsedRow } from '../lib/parseSheet'
 import { api } from '../api'
@@ -100,9 +101,7 @@ export default function Upload() {
     <div>
       <div className="mb-6">
         <h1 className="text-[22px] font-bold text-navy">Upload de Planilha</h1>
-        <p className="text-[13px] text-[#6b7280] mt-0.5">
-          Importe ou atualize agilistas via arquivo .xlsx ou .csv
-        </p>
+        <p className="text-[13px] text-[#6b7280] mt-0.5">Importe ou atualize agilistas via arquivo .xlsx ou .csv</p>
       </div>
 
       {/* Stepper */}
@@ -117,10 +116,7 @@ export default function Upload() {
 
       {/* Step 1: Upload */}
       {step === 1 && (
-        <div
-          className="bg-white border border-[#E0E0E0] rounded-[10px] p-5"
-          style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}
-        >
+        <div className="bg-white border border-[#E0E0E0] rounded-[10px] p-5" style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}>
           <div
             className={`border-2 border-dashed rounded-xl py-16 px-10 text-center cursor-pointer transition-all ${
               dragging ? 'border-brand-red bg-[#fdf5f3]' : 'border-[#E0E0E0] hover:border-brand-red hover:bg-[#fdf5f3]'
@@ -130,21 +126,17 @@ export default function Upload() {
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
           >
-            <div className="text-5xl mb-4 text-salmon">📂</div>
+            <div className="flex justify-center mb-4 text-salmon">
+              <FileUp size={48} strokeWidth={1.2} />
+            </div>
             <div className="text-[14px] text-[#6b7280]">
               Arraste um arquivo aqui ou <strong className="text-brand-red">clique para selecionar</strong>
             </div>
             <div className="text-[12px] text-[#6b7280] mt-1.5">Suporta .xlsx e .csv</div>
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".xlsx,.csv"
-            className="hidden"
-            onChange={handleFile}
-          />
+          <input ref={fileRef} type="file" accept=".xlsx,.csv" className="hidden" onChange={handleFile} />
           <div className="mt-4 p-3 bg-[#eff6ff] border border-[#93c5fd] rounded-lg flex items-start gap-2 text-[13px] text-[#1e40af]">
-            <span>ℹ</span>
+            <Info size={16} className="flex-shrink-0 mt-0.5" />
             <span>Colunas esperadas: <strong>nome</strong>, <strong>role</strong>, <strong>email</strong>, <strong>squad</strong> (opcional).</span>
           </div>
         </div>
@@ -152,24 +144,19 @@ export default function Upload() {
 
       {/* Step 2: Validation */}
       {step === 2 && (
-        <div
-          className="bg-white border border-[#E0E0E0] rounded-[10px] p-5"
-          style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}
-        >
+        <div className="bg-white border border-[#E0E0E0] rounded-[10px] p-5" style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}>
           {errors.length > 0 && (
             <div className="mb-4 p-3 bg-[#fefce8] border border-[#fde047] rounded-lg flex items-start gap-2 text-[13px] text-[#854d0e]">
-              <span>⚠</span>
+              <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
               <div>
                 <strong>{errors.length} problema(s) encontrado(s):</strong>
-                <ul className="mt-1 space-y-0.5">
-                  {errors.map((e, i) => <li key={i}>{e}</li>)}
-                </ul>
+                <ul className="mt-1 space-y-0.5">{errors.map((e, i) => <li key={i}>{e}</li>)}</ul>
               </div>
             </div>
           )}
           {errors.length === 0 && (
             <div className="mb-4 p-3 bg-[#f0fdf4] border border-[#86efac] rounded-lg flex items-center gap-2 text-[13px] text-[#166534]">
-              <span>✓</span>
+              <CheckCircle size={16} className="flex-shrink-0" />
               <span>Todos os {rows.length} registros estão válidos para importação.</span>
             </div>
           )}
@@ -208,15 +195,15 @@ export default function Upload() {
             </table>
           </div>
           <div className="flex gap-2.5 justify-end mt-4">
-            <button onClick={reset} className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors">
-              ← Voltar
+            <button onClick={reset} className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors">
+              <ChevronLeft size={14} /> Voltar
             </button>
             <button
               onClick={() => setStep(3)}
               disabled={rows.length === 0}
-              className="px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
             >
-              Continuar →
+              Continuar <ChevronRight size={14} />
             </button>
           </div>
         </div>
@@ -224,24 +211,22 @@ export default function Upload() {
 
       {/* Step 3: Confirm */}
       {step === 3 && (
-        <div
-          className="bg-white border border-[#E0E0E0] rounded-[10px] p-5"
-          style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}
-        >
+        <div className="bg-white border border-[#E0E0E0] rounded-[10px] p-5" style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}>
           <div className="mb-4 p-3 bg-[#eff6ff] border border-[#93c5fd] rounded-lg flex items-center gap-2 text-[13px] text-[#1e40af]">
-            <span>ℹ</span>
+            <Info size={16} className="flex-shrink-0" />
             <span>Pronto para importar <strong>{rows.length} registro(s)</strong>. Clique em "Importar" para confirmar.</span>
           </div>
           <div className="flex gap-2.5 justify-end">
-            <button onClick={() => setStep(2)} className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors">
-              ← Voltar
+            <button onClick={() => setStep(2)} className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors">
+              <ChevronLeft size={14} /> Voltar
             </button>
             <button
               onClick={handleImport}
               disabled={importing}
-              className="px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
             >
-              {importing ? 'Importando...' : `Importar ${rows.length} registro(s) →`}
+              {importing ? 'Importando...' : `Importar ${rows.length} registro(s)`}
+              {!importing && <ChevronRight size={14} />}
             </button>
           </div>
         </div>
@@ -249,22 +234,21 @@ export default function Upload() {
 
       {/* Step 4: Success */}
       {step === 4 && result && (
-        <div
-          className="bg-white border border-[#E0E0E0] rounded-[10px] p-12 text-center"
-          style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}
-        >
-          <div className="text-6xl mb-4 text-brand-red">✓</div>
+        <div className="bg-white border border-[#E0E0E0] rounded-[10px] p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}>
+          <div className="flex justify-center mb-4 text-brand-red">
+            <CheckCircle size={64} strokeWidth={1.2} />
+          </div>
           <div className="text-[22px] font-extrabold text-navy mb-2">Importação concluída!</div>
           <div className="inline-flex items-center gap-2 mt-4 p-3 bg-[#f0fdf4] border border-[#86efac] rounded-lg text-[13px] text-[#166534]">
-            <span>✓</span>
+            <CheckCircle size={16} />
             <span>{result.created} criados &nbsp;·&nbsp; {result.updated} atualizados</span>
           </div>
           <div className="flex gap-2.5 justify-center mt-6">
             <button
               onClick={reset}
-              className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors"
             >
-              ↺ Importar outro arquivo
+              <RefreshCw size={14} /> Importar outro arquivo
             </button>
           </div>
         </div>

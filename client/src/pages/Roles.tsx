@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Plus, X } from 'lucide-react'
 import { useStore } from '../store'
 import { api } from '../api'
 
@@ -39,10 +40,7 @@ export default function Roles() {
         <p className="text-[13px] text-[#6b7280] mt-0.5">Gerencie as roles disponíveis para os agilistas</p>
       </div>
 
-      <div
-        className="bg-white border border-[#E0E0E0] rounded-[10px] p-5"
-        style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}
-      >
+      <div className="bg-white border border-[#E0E0E0] rounded-[10px] p-5" style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}>
         <div className="text-[11px] font-bold uppercase tracking-[0.7px] text-[#6b7280] mb-3">
           Roles cadastradas
         </div>
@@ -59,10 +57,10 @@ export default function Roles() {
                 {r.nome}
                 <button
                   onClick={() => handleRemove(r.id, r.nome)}
-                  className="text-[#6b7280] hover:text-red-600 leading-none text-base"
+                  className="text-[#6b7280] hover:text-red-600 transition-colors flex items-center"
                   title="Remover"
                 >
-                  ×
+                  <X size={14} />
                 </button>
               </span>
             ))
@@ -83,7 +81,8 @@ export default function Roles() {
             disabled={!newRole.trim() || adding}
             className="flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
           >
-            + Adicionar
+            <Plus size={13} strokeWidth={2.5} />
+            Adicionar
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Plus, ChevronDown, X, Save } from 'lucide-react'
 import { useStore } from '../store'
 import { api } from '../api'
 
@@ -53,7 +54,8 @@ export default function Squads() {
           onClick={() => setOpen(true)}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-brand-red text-white text-[13px] font-semibold rounded-lg hover:bg-[#a33a22] transition-colors"
         >
-          + Nova Squad
+          <Plus size={14} strokeWidth={2} />
+          Nova Squad
         </button>
       </div>
 
@@ -68,7 +70,6 @@ export default function Squads() {
               className="bg-white border border-[#E0E0E0] rounded-[10px] overflow-hidden"
               style={{ boxShadow: '0 2px 8px rgba(9,32,64,.08)' }}
             >
-              {/* Header */}
               <div
                 className="flex items-center justify-between px-5 py-4 cursor-pointer border-l-4 border-l-brand-red hover:bg-[#fdf5f3] transition-colors"
                 onClick={() => toggleExpand(squad.id)}
@@ -86,16 +87,14 @@ export default function Squads() {
                       Inativa
                     </span>
                   )}
-                  <span
-                    className="text-[#6b7280] transition-transform duration-200 text-lg leading-none"
-                    style={{ transform: isOpen ? 'rotate(180deg)' : 'none', display: 'inline-block' }}
-                  >
-                    ⌄
-                  </span>
+                  <ChevronDown
+                    size={16}
+                    className="text-[#6b7280] transition-transform duration-200"
+                    style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}
+                  />
                 </div>
               </div>
 
-              {/* Body */}
               {isOpen && (
                 <div className="px-5 py-4 border-t border-[#E0E0E0] flex flex-wrap gap-2">
                   {squad.agilistas.length === 0 ? (
@@ -106,9 +105,7 @@ export default function Squads() {
                         key={m.id}
                         className="flex items-center gap-2 bg-page-bg border border-[#E0E0E0] rounded-lg px-3.5 py-2 text-[13px]"
                       >
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#e8edf5] text-navy">
-                          SM
-                        </span>
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#e8edf5] text-navy">SM</span>
                         <span>{m.nome}</span>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusBadge[m.status] ?? 'bg-[#e8edf5] text-navy'}`}>
                           {m.status === 'ativo' ? 'Ativo' : 'Inativo'}
@@ -143,40 +140,30 @@ export default function Squads() {
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0E0E0]">
               <h2 className="text-[16px] font-bold text-navy">Nova Squad</h2>
-              <button onClick={() => setOpen(false)} className="text-[#6b7280] hover:text-brand-red text-xl leading-none">×</button>
+              <button onClick={() => setOpen(false)} className="text-[#6b7280] hover:text-brand-red p-0.5 rounded transition-colors">
+                <X size={20} />
+              </button>
             </div>
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className={labelClass}>Nome da Squad *</label>
-                <input
-                  className={inputClass}
-                  placeholder="Ex: Squad Pagamentos"
-                  value={form.nome}
-                  onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                />
+                <input className={inputClass} placeholder="Ex: Squad Pagamentos" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
               </div>
               <div>
                 <label className={labelClass}>Tribo / Área</label>
-                <input
-                  className={inputClass}
-                  placeholder="Ex: Tribo Financeiro"
-                  value={form.tribo}
-                  onChange={e => setForm(f => ({ ...f, tribo: e.target.value }))}
-                />
+                <input className={inputClass} placeholder="Ex: Tribo Financeiro" value={form.tribo} onChange={e => setForm(f => ({ ...f, tribo: e.target.value }))} />
               </div>
             </div>
             <div className="flex justify-end gap-2.5 px-6 py-4 border-t border-[#E0E0E0]">
-              <button
-                onClick={() => setOpen(false)}
-                className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors"
-              >
+              <button onClick={() => setOpen(false)} className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors">
                 Cancelar
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!form.nome || saving}
-                className="px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-lg bg-brand-red text-white hover:bg-[#a33a22] disabled:opacity-50 transition-colors"
               >
+                <Save size={13} />
                 {saving ? 'Criando...' : 'Criar Squad'}
               </button>
             </div>

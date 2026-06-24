@@ -3,6 +3,7 @@ import {
   useReactTable, getCoreRowModel, getFilteredRowModel,
   createColumnHelper, flexRender,
 } from '@tanstack/react-table'
+import { Search, Pencil, Clock, Trash2, X } from 'lucide-react'
 import type { Agilista, Role, Squad, Alocacao } from '../types'
 import { api } from '../api'
 
@@ -51,15 +52,11 @@ export default function AgilistaTable({ agilistas, roles, squads, onUpdate, onDe
   const columns = useMemo(() => [
     col.accessor('nome', {
       header: 'Nome',
-      cell: ({ getValue }) => (
-        <strong className="text-navy">{getValue()}</strong>
-      ),
+      cell: ({ getValue }) => <strong className="text-navy">{getValue()}</strong>,
     }),
     col.accessor('email', {
       header: 'E-mail',
-      cell: ({ getValue }) => (
-        <span className="text-[#6b7280]">{getValue()}</span>
-      ),
+      cell: ({ getValue }) => <span className="text-[#6b7280]">{getValue()}</span>,
     }),
     col.accessor('role_id', {
       header: 'Role',
@@ -107,17 +104,17 @@ export default function AgilistaTable({ agilistas, roles, squads, onUpdate, onDe
             <button
               onClick={() => onEdit(row.original)}
               title="Editar"
-              className="px-2 py-1 text-[12px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors"
+              className="p-1.5 rounded-lg border border-[#E0E0E0] bg-white text-[#6b7280] hover:border-brand-red hover:text-brand-red transition-colors"
             >
-              ✏
+              <Pencil size={13} />
             </button>
           )}
           <button
             onClick={() => openHistory(row.original)}
             title="Histórico"
-            className="px-2 py-1 text-[12px] font-semibold rounded-lg border border-[#E0E0E0] bg-white text-[#1a1a2e] hover:border-brand-red hover:text-brand-red transition-colors"
+            className="p-1.5 rounded-lg border border-[#E0E0E0] bg-white text-[#6b7280] hover:border-brand-red hover:text-brand-red transition-colors"
           >
-            ⏱
+            <Clock size={13} />
           </button>
           {onDelete && (
             <button
@@ -127,9 +124,9 @@ export default function AgilistaTable({ agilistas, roles, squads, onUpdate, onDe
                 }
               }}
               title="Remover"
-              className="px-2 py-1 text-[12px] font-semibold rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+              className="p-1.5 rounded-lg border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
             >
-              🗑
+              <Trash2 size={13} />
             </button>
           )}
         </div>
@@ -150,7 +147,7 @@ export default function AgilistaTable({ agilistas, roles, squads, onUpdate, onDe
     <>
       {/* Search box */}
       <div className="relative mb-4">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280] text-sm">🔍</span>
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280]" />
         <input
           placeholder="Buscar por nome ou e-mail..."
           value={globalFilter}
@@ -191,10 +188,7 @@ export default function AgilistaTable({ agilistas, roles, squads, onUpdate, onDe
               table.getRowModel().rows.map(row => (
                 <tr
                   key={row.id}
-                  className="border-b border-[#E0E0E0] last:border-0"
-                  style={{ transition: 'background .1s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#fdf5f3')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '')}
+                  className="border-b border-[#E0E0E0] last:border-0 transition-colors hover:bg-[#fdf5f3]"
                 >
                   {row.getVisibleCells().map(cell => (
                     <td key={cell.id} className="px-4 py-3 align-middle">
@@ -224,9 +218,9 @@ export default function AgilistaTable({ agilistas, roles, squads, onUpdate, onDe
               <h2 className="text-[16px] font-bold text-navy">Histórico de Alocação</h2>
               <button
                 onClick={() => setHistAgilista(null)}
-                className="text-[#6b7280] hover:text-brand-red text-xl leading-none"
+                className="text-[#6b7280] hover:text-brand-red p-0.5 rounded transition-colors"
               >
-                ×
+                <X size={20} />
               </button>
             </div>
             <div className="px-6 py-5">
